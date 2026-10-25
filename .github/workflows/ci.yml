@@ -38,6 +38,9 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Dependency audit
+        run: pnpm audit --audit-level high
+
       # --- Contract gates -------------------------------------------------
       - name: Hermetic core (no network, models, secrets, or randomness)
         run: pnpm check:hermetic

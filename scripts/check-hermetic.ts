@@ -13,6 +13,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const ROOT = 'packages'
+const PACKAGE_JSON = 'package.json'
 
 const FORBIDDEN_IMPORTS = [
   'node:http',
@@ -58,6 +59,24 @@ function walk(dir: string): string[] {
 }
 
 const findings: Finding[] = []
+
+// The core must stay dependency-free at runtime. Every runtime dependency is
+// another supply-chain path into the trusted path.
+const manifest = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as {
+  dependencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
+}
+for (const field of ['dependencies', 'optionalDependencies'] as const) {
+  const deps = Object.keys(manifest[field] ?? {})
+  for (const dep of deps) {
+    findings.push({
+      file: PACKAGE_JSON,
+      line: 0,
+      reason: `runtime ${field} entry: ${dep}`,
+      text: 'packages/ must remain dependency-free',
+    })
+  }
+}
 
 for (const file of walk(ROOT)) {
   const lines = readFileSync(file, 'utf8').split('\n')

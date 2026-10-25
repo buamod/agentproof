@@ -137,7 +137,7 @@ The pipeline checks the verifier, not just the code. Full rationale in [docs/ci.
 | **Mutation benchmark** | All catalogued defects caught, no correct executor flagged |
 | **Reproducibility** | Two independent benchmark runs must produce byte-identical JSON |
 | **CodeQL** | Static analysis (`security-extended`) for JavaScript/TypeScript |
-| **Dependency review** | New dependencies are blocked on high-severity advisories |
+| **Dependency audit** | No high-severity advisories in the resolved tree; zero runtime dependencies |
 | **Secret scan** | gitleaks over full history |
 | **Workflow hardening** | No `pull_request_target`, least-privilege permissions, pinned actions |
 | **SBOM** | An SPDX inventory of the dependency graph |

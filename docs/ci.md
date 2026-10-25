@@ -19,7 +19,7 @@ otherwise go unnoticed.
 | Mutation benchmark | `ci.yml` | All catalogued defects are detected and no correct executor is flagged | The suite has gone blind, or is failing indiscriminately |
 | Reproducibility | `ci.yml` | Two independent benchmark processes produce byte-identical JSON | The evaluator or harness is non-deterministic |
 | CodeQL | `security.yml` | Static analysis for JavaScript/TypeScript (`security-extended`) | A code-level vulnerability pattern was found |
-| Dependency review | `security.yml` | New dependencies do not introduce high-severity advisories | A risky dependency was added |
+| Dependency audit | `ci.yml` | The resolved tree has no high-severity advisories | A dependency has a known vulnerability |
 | Secret scan | `security.yml` | No credentials in the repository history | A secret was committed |
 | Workflow hardening | `ci.yml` | No `pull_request_target`, least-privilege permissions, pinned actions | A workflow became an attack path |
 | SBOM | `security.yml` | An SPDX inventory of the dependency graph is produced | The shipped composition is unknown |
@@ -38,7 +38,7 @@ component graded itself.
   mutation detection provides no security assurance.
 - **Reproducibility diff** catches accidental time, ordering, or randomness dependence. Byte-identical
   reports are the minimum bar for a verdict someone else is expected to trust.
-- **CodeQL and dependency review** cover the code and supply chain that the runtime evidence cannot see.
+- **CodeQL and the dependency audit** cover the code and supply chain that the runtime evidence cannot see. The core also has zero runtime dependencies, enforced by the hermetic gate.
 - **Secret scanning** matters more than usual here: agent projects tend to accumulate provider keys.
 
 ## Deliberately absent
@@ -51,6 +51,9 @@ component graded itself.
   anything.
 - **No Windows/macOS matrix.** The core is in-memory and OS-independent; the cost is not justified
   until process isolation and persistence land.
+- **No dependency-review action.** It requires the repository dependency graph to be enabled in
+  settings. `pnpm audit` plus Dependabot advisory PRs cover the same class of risk without a
+  repository toggle.
 - **No OSSF Scorecard job.** It was removed because the upstream action image could not be pulled
   (`gcr.io` billing error on the action's project, not this repository). The locally-owned workflow
   hardening gate covers the rules that matter most here. Scorecard can be re-added when the upstream
