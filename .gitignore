@@ -1,0 +1,25 @@
+# Logs
+logs
+*.log
+
+# Runtime stuff
+pnpm-lock.yaml
+node_modules/
+/dist/
+
+# Test/cache artifacts
+/.vitest-cache/
+
+# Environment variables
+.env*
+
+# IDE
+.vscode/
+*.code-workspace
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo
+
+# Production
+.DS_Store
