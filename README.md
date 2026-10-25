@@ -10,6 +10,7 @@ A deterministic harness for AI agents that decides whether a security control *a
 using evidence the agent and the enforcer cannot write.
 
 [![ci](https://github.com/buamod/agentproof/actions/workflows/ci.yml/badge.svg)](https://github.com/buamod/agentproof/actions/workflows/ci.yml)
+[![security](https://github.com/buamod/agentproof/actions/workflows/security.yml/badge.svg)](https://github.com/buamod/agentproof/actions/workflows/security.yml)
 [![tests](https://img.shields.io/badge/tests-109%20passing-brightgreen)](#status)
 [![runtime](https://img.shields.io/badge/runtime-deterministic%20%C2%B7%20offline-blue)](#quick-start)
 [![license](https://img.shields.io/badge/license-MIT-black)](LICENSE)
@@ -124,6 +125,26 @@ pnpm benchmark     # mutation score against 11 catalogued defects
 pnpm typecheck
 ```
 
+## What CI verifies
+
+The pipeline checks the verifier, not just the code. Full rationale in [docs/ci.md](docs/ci.md).
+
+| Gate | Why it exists |
+| --- | --- |
+| **Hermetic core** | `packages/` must not reach the network, call a model, read secrets, or use randomness |
+| **Contract validation** | Every policy and scenario is re-validated; known-invalid policies must be rejected |
+| **Security suite** | Prompt injection, privilege escalation, denied access, contradictions |
+| **Mutation benchmark** | All catalogued defects caught, no correct executor flagged |
+| **Reproducibility** | Two independent benchmark runs must produce byte-identical JSON |
+| **CodeQL** | Static analysis (`security-extended`) for JavaScript/TypeScript |
+| **Dependency review** | New dependencies are blocked on high-severity advisories |
+| **Secret scan** | gitleaks over full history |
+| **Scorecard / SBOM** | Supply-chain posture and an SPDX inventory of the dependency graph |
+
+Required checks are deterministic and run offline. No model provider key is used, and no AI-generated
+result can gate a merge. When the planner arrives, model-backed evaluation goes in a separate,
+budgeted workflow — the deterministic suite stays the required gate.
+
 ## Status
 
 **Built and tested — the deterministic core.** There is no AI component yet, and the README will say
@@ -208,7 +229,8 @@ tests/security/         end-to-end regression suite
 docs/                   architecture, roadmap, policy contract, threat model, methodology
 scripts/demo.ts         one-command demonstration
 scripts/benchmark.ts    mutation benchmark (add --json for machine output)
-.github/workflows/      CI: typecheck, tests, benchmark
+.github/workflows/      CI + security workflows
+.github/dependabot.yml  weekly dependency and action updates
 assets/logo.svg         project mark
 ```
 
@@ -219,6 +241,7 @@ assets/logo.svg         project mark
 - [Policy contract](docs/policy-contract.md)
 - [Threat model](docs/threat-model.md)
 - [Evaluation methodology](docs/evaluation-methodology.md)
+- [CI and verification gates](docs/ci.md)
 
 ## License
 

@@ -12,10 +12,16 @@
     "test:security": "vitest run tests/security",
     "demo": "tsx scripts/demo.ts",
     "typecheck": "tsc --noEmit",
-    "benchmark": "tsx scripts/benchmark.ts"
+    "benchmark": "tsx scripts/benchmark.ts",
+    "check:hermetic": "tsx scripts/check-hermetic.ts",
+    "check:contracts": "tsx scripts/verify-contracts.ts",
+    "test:coverage": "vitest run --coverage",
+    "benchmark:json": "tsx scripts/benchmark.ts --json",
+    "verify": "pnpm check:hermetic && pnpm check:contracts && pnpm typecheck && pnpm test:security && pnpm test && pnpm benchmark"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "^5.0.5",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "vitest": "^5.0.5"

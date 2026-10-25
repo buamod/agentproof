@@ -4,28 +4,106 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# Least privilege by default. Jobs opt in to anything else.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
+    name: Verify (Node 22)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Version comes from package.json's packageManager field.
-      - uses: pnpm/action-setup@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # --- Contract gates -------------------------------------------------
+      - name: Hermetic core (no network, models, secrets, or randomness)
+        run: pnpm check:hermetic
+
+      - name: Policy and scenario contracts
+        run: pnpm check:contracts
 
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Unit and security tests
+      # --- Behaviour gates ------------------------------------------------
+      - name: Security regression suite
+        run: pnpm test:security
+
+      - name: Full test suite
         run: pnpm test
 
-      - name: Mutation benchmark
+      - name: Demo runs
+        run: pnpm demo
+
+      # --- Trust gates ----------------------------------------------------
+      - name: Mutation benchmark (fails on survivors or false positives)
         run: pnpm benchmark
+
+      - name: Reproducibility (two independent benchmark runs must match)
+        shell: bash
+        run: |
+          pnpm benchmark:json > "$RUNNER_TEMP/bench-a.json"
+          pnpm benchmark:json > "$RUNNER_TEMP/bench-b.json"
+          diff "$RUNNER_TEMP/bench-a.json" "$RUNNER_TEMP/bench-b.json"
+          cp "$RUNNER_TEMP/bench-a.json" benchmark-report.json
+          sha256sum benchmark-report.json
+
+      - name: Coverage
+        run: pnpm test:coverage
+
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report
+          path: benchmark-report.json
+          retention-days: 14
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
+
+  compatibility:
+    name: Compatibility (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test

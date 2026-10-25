@@ -8,6 +8,9 @@ node_modules/
 
 # Test/cache artifacts
 /.vitest-cache/
+coverage/
+benchmark-report.json
+*.spdx.json
 
 # Environment variables
 .env*
