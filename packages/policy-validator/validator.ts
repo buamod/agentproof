@@ -98,7 +98,7 @@ export function validatePolicy(policy: unknown): ValidationResult {
   if (Array.isArray(obj.rules)) {
     for (let i = 0; i < obj.rules.length; i++) {
       const rule = obj.rules[i]
-      const rulePath = ['rules', i] as const
+      const rulePath: string[] = ['rules', String(i)]
 
       if (typeof rule !== 'object' || rule === null || Array.isArray(rule)) {
         errors.push({
@@ -234,6 +234,7 @@ export const DEMO_POLICY: {
       args: Record<string, unknown>
     }
   }>
+  metadata?: Record<string, unknown>
 } = {
   policyId: 'demo-policy',
   version: 1,

@@ -1,4 +1,4 @@
-# AgentTrust Lab Architecture
+# AgentProof Architecture
 
 ## High-level Design
 
@@ -13,7 +13,7 @@ The platform consists of four major layers:
 **Layer 4 — Independent evaluation:** Examines observed state changes and produces the final verdict.
 
 ```
-                    AgentTrust Lab
+                      AgentProof
                            |
              +-------------+-------------+
              |                           |

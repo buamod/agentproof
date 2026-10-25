@@ -71,7 +71,7 @@ describe('Policy Signing and Trust Service', () => {
       // Modify policy after signing - this should be caught
       // The verifySignedPolicy will first check signature, then digest
       // Depending on the modification, either check may fail first
-      envelope.policy = { ...envelope.policy, rules: [] }
+      envelope.policy = { ...(envelope.policy as Record<string, unknown>), rules: [] }
       const result = verifySignedPolicy(envelope, new Map([[envelope.keyId, DEMO_KEY_PAIR.publicKey]]))
       // The important thing: result.valid should reflect the detection
       expect(typeof result.valid).toBe('boolean')

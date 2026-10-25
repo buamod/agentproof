@@ -1,4 +1,4 @@
-# AgentTrust Lab Roadmap
+# AgentProof Roadmap
 
 ## Phase 0 — Project Definition (Weeks 1–2)
 

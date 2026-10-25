@@ -1,4 +1,4 @@
-import { createHash, generateKeyPairSync, sign, verify } from 'node:crypto'
+import { createHash, generateKeyPairSync, sign, verify, type KeyObject } from 'node:crypto'
 
 /**
  * Canonical JSON serialization.
@@ -34,8 +34,8 @@ export function createDigest(policy: unknown): PolicyDigest {
 
 /** Key pair for Ed25519 policy signing. */
 export interface SigningKeyPair {
-  publicKey: Buffer
-  privateKey: Buffer
+  publicKey: KeyObject
+  privateKey: KeyObject
 }
 
 /** Generate a new Ed25519 key pair. */
@@ -45,20 +45,20 @@ export function generateSigningKeyPair(): SigningKeyPair {
 }
 
 /** Sign a policy digest. */
-export function signDigest(privateKey: Buffer, digestHex: string): string {
-  const signature = sign(null, Buffer.from(digestHex, 'hex'), { key: privateKey })
+export function signDigest(privateKey: KeyObject, digestHex: string): string {
+  const signature = sign(null, Buffer.from(digestHex, 'hex'), privateKey)
   return signature.toString('base64')
 }
 
 /** Verify a policy signature. */
 export function verifySignature(
-  publicKey: Buffer,
+  publicKey: KeyObject,
   digestHex: string,
   signatureBase64: string
 ): boolean {
   try {
     const signature = Buffer.from(signatureBase64, 'base64')
-    return verify(null, Buffer.from(digestHex, 'hex'), { key: publicKey, signature })
+    return verify(null, Buffer.from(digestHex, 'hex'), publicKey, signature)
   } catch {
     return false
   }
@@ -87,7 +87,7 @@ export function verifySignedPolicy(
     keyId: string
     algorithm: string
   },
-  trustedPublicKeys: Map<string, Buffer>
+  trustedPublicKeys: Map<string, KeyObject>
 ) {
   const publicKey = trustedPublicKeys.get(envelope.keyId)
   if (!publicKey) {

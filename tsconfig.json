@@ -8,9 +8,25 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "lib": ["ES2022"],
-    "types": ["node"]
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+    "noEmit": true,
+    "moduleResolution": "bundler"
   },
-  "include": ["packages/**/*", "docs/**/*", "*.ts", "*.mts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "packages/**/*",
+    "tests/**/*",
+    "scripts/**/*",
+    "*.ts",
+    "*.mts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

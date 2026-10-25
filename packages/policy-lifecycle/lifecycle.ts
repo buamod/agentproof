@@ -53,6 +53,7 @@ const validTransitions: Record<PolicyState['status'], PolicyState['status'][]> =
   SIGNED: ['ACCEPTED'],
   ACCEPTED: ['ACTIVE'],
   ACTIVE: ['VERIFIED'],
+  VERIFIED: [],
   // Terminal/rejection states - no forward transitions
   REJECTED: [],
   INVALID: [],
@@ -119,7 +120,7 @@ export class PolicyLifecycleController {
     const auditEvent: AuditEvent = {
       timestamp: Date.now(),
       from: { ...this.state },
-      to: { status: newStatus, version: this.state.version, ...this.state, auditLog: this.state.auditLog },
+      to: { ...this.state, status: newStatus, auditLog: this.state.auditLog },
       triggeredBy,
       reason,
     }
@@ -144,12 +145,17 @@ export class PolicyLifecycleController {
     }
   }
 
+  /** Read-only snapshot of the current lifecycle state. */
+  getState(): PolicyState {
+    return { ...this.state, auditLog: [...this.state.auditLog] }
+  }
+
   /** Reject the policy from any state. */
   reject(newStatus: PolicyState['status'], triggeredBy: 'system' | 'user' | 'controller', reason?: string): { valid: boolean; error: string; auditEvent: AuditEvent } {
     const auditEvent: AuditEvent = {
       timestamp: Date.now(),
       from: { ...this.state },
-      to: { status: newStatus, version: this.state.version, ...this.state, auditLog: this.state.auditLog },
+      to: { ...this.state, status: newStatus, auditLog: this.state.auditLog },
       triggeredBy,
       reason: reason || 'Policy rejected',
     }
@@ -219,8 +225,8 @@ export function acceptAndTransition(controller: PolicyLifecycleController): { va
 /** Transition from ACCEPTED to ACTIVE (activation). */
 export function activateAndTransition(controller: PolicyLifecycleController): { valid: boolean; error?: string } {
   // CRITICAL: Only policies with status ACCEPTED can be activated
-  if (controller.state.status !== 'ACCEPTED') {
-    return { valid: false, error: `Cannot activate policy in ${controller.state.status} state. Must be ACCEPTED first.` }
+  if (controller.getState().status !== 'ACCEPTED') {
+    return { valid: false, error: `Cannot activate policy in ${controller.getState().status} state. Must be ACCEPTED first.` }
   }
   return controller.transitionTo('ACTIVE', 'system', 'Policy activated')
 }
