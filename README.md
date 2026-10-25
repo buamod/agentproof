@@ -139,7 +139,8 @@ The pipeline checks the verifier, not just the code. Full rationale in [docs/ci.
 | **CodeQL** | Static analysis (`security-extended`) for JavaScript/TypeScript |
 | **Dependency review** | New dependencies are blocked on high-severity advisories |
 | **Secret scan** | gitleaks over full history |
-| **Scorecard / SBOM** | Supply-chain posture and an SPDX inventory of the dependency graph |
+| **Workflow hardening** | No `pull_request_target`, least-privilege permissions, pinned actions |
+| **SBOM** | An SPDX inventory of the dependency graph |
 
 Required checks are deterministic and run offline. No model provider key is used, and no AI-generated
 result can gate a merge. When the planner arrives, model-backed evaluation goes in a separate,

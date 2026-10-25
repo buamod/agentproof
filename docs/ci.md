@@ -21,7 +21,7 @@ otherwise go unnoticed.
 | CodeQL | `security.yml` | Static analysis for JavaScript/TypeScript (`security-extended`) | A code-level vulnerability pattern was found |
 | Dependency review | `security.yml` | New dependencies do not introduce high-severity advisories | A risky dependency was added |
 | Secret scan | `security.yml` | No credentials in the repository history | A secret was committed |
-| OSSF Scorecard | `security.yml` | Supply-chain posture: pinned actions, permissions, branch protection | Repository hygiene regressed |
+| Workflow hardening | `ci.yml` | No `pull_request_target`, least-privilege permissions, pinned actions | A workflow became an attack path |
 | SBOM | `security.yml` | An SPDX inventory of the dependency graph is produced | The shipped composition is unknown |
 
 ## Why these are the right gates for an agentic-AI project
@@ -51,6 +51,10 @@ component graded itself.
   anything.
 - **No Windows/macOS matrix.** The core is in-memory and OS-independent; the cost is not justified
   until process isolation and persistence land.
+- **No OSSF Scorecard job.** It was removed because the upstream action image could not be pulled
+  (`gcr.io` billing error on the action's project, not this repository). The locally-owned workflow
+  hardening gate covers the rules that matter most here. Scorecard can be re-added when the upstream
+  registry is healthy; branch protection and code-scanning defaults are repository settings, not YAML.
 
 ## When the AI planner arrives (Phase 4)
 

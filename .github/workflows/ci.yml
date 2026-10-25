@@ -45,6 +45,9 @@ jobs:
       - name: Policy and scenario contracts
         run: pnpm check:contracts
 
+      - name: Workflow hardening (permissions, pinned actions)
+        run: pnpm check:workflows
+
       - name: Typecheck
         run: pnpm typecheck
 

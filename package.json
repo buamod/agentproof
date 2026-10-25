@@ -17,7 +17,8 @@
     "check:contracts": "tsx scripts/verify-contracts.ts",
     "test:coverage": "vitest run --coverage",
     "benchmark:json": "tsx scripts/benchmark.ts --json",
-    "verify": "pnpm check:hermetic && pnpm check:contracts && pnpm typecheck && pnpm test:security && pnpm test && pnpm benchmark"
+    "verify": "pnpm check:hermetic && pnpm check:contracts && pnpm check:workflows && pnpm typecheck && pnpm test:security && pnpm test && pnpm benchmark",
+    "check:workflows": "tsx scripts/check-workflow-security.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
