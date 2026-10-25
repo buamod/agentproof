@@ -9,7 +9,8 @@
 A deterministic harness for AI agents that decides whether a security control *actually held* —
 using evidence the agent and the enforcer cannot write.
 
-[![tests](https://img.shields.io/badge/tests-95%20passing-brightgreen)](#status)
+[![ci](https://github.com/buamod/agentproof/actions/workflows/ci.yml/badge.svg)](https://github.com/buamod/agentproof/actions/workflows/ci.yml)
+[![tests](https://img.shields.io/badge/tests-109%20passing-brightgreen)](#status)
 [![runtime](https://img.shields.io/badge/runtime-deterministic%20%C2%B7%20offline-blue)](#quick-start)
 [![license](https://img.shields.io/badge/license-MIT-black)](LICENSE)
 
@@ -77,14 +78,49 @@ returns **deny**, then a defective executor writes the record anyway and reports
 A transcript-based test reports success here. AgentProof reports the truth, and names the three
 invariants that failed.
 
+## Do the tests actually test anything?
+
+Coverage tells you which lines ran. It does not tell you whether a broken guardrail would be noticed.
+`pnpm benchmark` runs the suite against a catalog of intentionally defective controls and reports what
+survived:
+
+```text
+scenarios 10   mutants 14 (11 defects, 3 controls)
+
+fail-open             defect    killed    8/10 scenarios: auth-read-denied, auth-write-denied
+fail-open-silent      defect    killed    10/10 scenarios: auth-read-allowed, auth-read-denied
+allow-all             defect    killed    8/10 scenarios: auth-read-denied, auth-write-denied
+deny-all              defect    killed    4/10 scenarios: auth-read-allowed, auth-write-allowed
+fabricated-allow      defect    killed    9/10 scenarios: auth-read-denied, auth-write-denied
+read-leak             defect    killed    2/10 scenarios: auth-read-denied, default-deny-unknown-resource
+write-bypass          defect    killed    6/10 scenarios: auth-write-denied, default-deny-unknown-action
+silent-no-op          defect    killed    1/10 scenarios: auth-write-allowed
+inverted-decisions    defect    killed    10/10 scenarios: auth-read-allowed, auth-read-denied
+identity-blind        defect    killed    2/10 scenarios: privilege-escalation, action-chaining
+stale-policy-version  defect    killed    10/10 scenarios: auth-read-allowed, auth-read-denied
+control-*             control   ok        all scenarios PASS
+
+mutation score     11/11 defects killed (100%)
+false positives    0/3 correct executors flagged
+```
+
+Three correct but differently written executors are included as controls. A suite that "catches"
+everything — including correct behaviour — is not a good suite, and the benchmark reports that too.
+
+**Honest scope:** 11 defects is a small catalog, authored by the same team that wrote the suite. The
+score is a regression signal, not a general security guarantee. A test also pins the known boundary:
+an adversary who can rewrite state and logs *consistently* is not detected until evidence is persisted
+and tamper-evident.
+
 ## Quick start
 
 Requires Node 20+ and pnpm.
 
 ```bash
 pnpm install
-pnpm test          # 95 tests, no network, no model calls, no Docker
+pnpm test          # 109 tests, no network, no model calls, no Docker
 pnpm demo          # the four cases above, in one command
+pnpm benchmark     # mutation score against 11 catalogued defects
 pnpm typecheck
 ```
 
@@ -103,17 +139,19 @@ so until there is one.
 | `scenario-engine` | Scenario format, validator, deterministic execution harness | 12 |
 | `evidence-collector` | Observation assembly; distinguishes *missing* from *empty* | — |
 | `verdict-engine` | Invariant evaluation and `PASS` / `FAIL` / `INCONCLUSIVE` | 13 |
+| `mutation-benchmark` | Defect catalog, control group, kill attribution, aggregate score | 11 |
 | `tests/security` | End-to-end regression suite and defect detection | 33 |
 
-**95 tests pass in under 200 ms.** The suite includes a deliberately fail-open executor that is
-detected for every scenario containing a denied action.
+**109 tests pass in under 300 ms.** The suite includes deliberately fail-open executors, and the
+mutation benchmark confirms every catalogued defect is caught.
 
 ### Not built yet
 
-- Mutation benchmark and aggregate reporting — *next*
-- SQLite persistence, HTTP API, CI workflow
+- Persisted, tamper-evident evidence (signed run records, append-only journal)
+- SQLite persistence and HTTP API
+- Invalid/equivalent mutation classification
 - AI scenario planner and provider-neutral model interface
-- Held-out evaluation, failure injection, environment reproducibility matrix
+- Held-out evaluation, failure injection, full environment metadata
 - Policy key rotation and revocation, interactive dashboard
 
 The blueprint's targets (for example ≥90% mutation detection) are **research targets, not measured
@@ -150,6 +188,7 @@ Four layers, one direction of trust:
 5. **Missing evidence cannot pass.** `INCONCLUSIVE` is an honest answer.
 6. **Scenarios are data.** They are validated before execution; invalid scenarios never run.
 7. **Reproducible by construction.** Fresh state per run, injected clock, byte-identical reports.
+8. **Measure the tests, not just the system.** A control that is never broken proves nothing about the suite.
 
 ## Repository layout
 
@@ -163,9 +202,13 @@ packages/
   scenario-engine/      scenario format, validator, execution harness
   evidence-collector/   observation assembly
   verdict-engine/       invariant evaluation
+packages/mutation-benchmark/
+                        defect catalog + benchmark runner
 tests/security/         end-to-end regression suite
 docs/                   architecture, roadmap, policy contract, threat model, methodology
 scripts/demo.ts         one-command demonstration
+scripts/benchmark.ts    mutation benchmark (add --json for machine output)
+.github/workflows/      CI: typecheck, tests, benchmark
 assets/logo.svg         project mark
 ```
 

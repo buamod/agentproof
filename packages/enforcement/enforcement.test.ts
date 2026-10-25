@@ -120,3 +120,48 @@ describe('Enforcement Service', () => {
     expect(decision.reason).toContain('Denied by default')
   })
 })
+
+describe('Enforcement Service - fail closed', () => {
+  test('an exception during authorization is a denial, never an allow', () => {
+    const hostileRule = { resource: 'public-document', action: 'read', effect: 'allow' as const }
+    Object.defineProperty(hostileRule, 'subject', {
+      get() {
+        throw new Error('malformed rule')
+      },
+      enumerable: true,
+    })
+
+    const service = new EnforcementService(1, [hostileRule as never])
+    const decision = service.checkAuthorization({
+      identity: { id: 'user1', role: 'reader', trusted: false },
+      resource: 'public-document',
+      action: 'read',
+      policyVersion: 1,
+      agentClaimsAuthorized: true,
+    })
+
+    expect(decision.allowed).toBe(false)
+    expect(decision.reason).toContain('fail-closed')
+  })
+
+  test('a malformed request is denied rather than throwing', () => {
+    const service = new EnforcementService(1, [])
+    const decision = service.checkAuthorization(null as never)
+    expect(decision.allowed).toBe(false)
+  })
+
+  test('the active policy version wins over the version in the request', () => {
+    const service = new EnforcementService(3, [
+      { subject: 'reader', resource: 'public-document', action: 'read', effect: 'allow' },
+    ])
+    const decision = service.checkAuthorization({
+      identity: { id: 'user1', role: 'reader', trusted: false },
+      resource: 'public-document',
+      action: 'read',
+      policyVersion: 99,
+      agentClaimsAuthorized: false,
+    })
+    expect(decision.allowed).toBe(true)
+    expect(decision.policyVersion).toBe(3)
+  })
+})

@@ -97,6 +97,29 @@ export class EnforcementService {
   checkAuthorization(request: OperationRequest): EnforcementDecision {
     this.auditCounter++
 
+    // Fail closed: any error while evaluating authorization is a denial.
+    // A thrown exception must never become an allow.
+    try {
+      return this.decide(request)
+    } catch (error) {
+      const decision: EnforcementDecision = {
+        allowed: false,
+        policyVersion: this.activePolicyVersion,
+        identity: request?.identity,
+        resource: request?.resource,
+        action: request?.action,
+        reason: `Denied - enforcement error (fail-closed): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        auditId: `audit-${this.auditCounter}`,
+      }
+      this.recordAudit(decision)
+      return decision
+    }
+  }
+
+  /** Authorization logic. Callers must go through checkAuthorization. */
+  private decide(request: OperationRequest): EnforcementDecision {
     // CRITICAL: The enforcer ignores agentClaimsAuthorized
     // The agent saying "I am admin" has no effect on the decision
 

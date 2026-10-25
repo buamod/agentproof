@@ -1,5 +1,20 @@
 # AgentProof Roadmap
 
+## Status at a glance
+
+| Phase | Status |
+| --- | --- |
+| 0 — Project definition | complete |
+| 1 — Deterministic policy engine | complete |
+| 2 — Scenario engine and independent evaluator | complete |
+| 3 — Mutation testing and benchmark | mostly complete: catalog, runner, aggregation, CI gate, limitations; invalid/equivalent classification and full environment metadata remain |
+| 4 — AI-assisted scenario generation | not started |
+| 5 — Hardening and fair evaluation | not started |
+| 6 — Portfolio and public release | partial: docs, demo, README, logo |
+| 7 — Advanced research | not started |
+
+Anything not marked complete below is a plan, not a claim.
+
 ## Phase 0 — Project Definition (Weeks 1–2)
 
 **Objective:** Define the contracts before writing the agent.
@@ -56,6 +71,8 @@
 
 **Exit criteria:** The test engine catches known defects using evidence independent of the agent's claims.
 
+**Status:** complete. 10 baseline scenarios, six invariants, 109 tests, current defect catalog fully detected.
+
 ## Phase 3 — Mutation testing and benchmark (Weeks 9–11)
 
 **Objective:** Measure the strength of the deterministic testing system.
@@ -73,7 +90,11 @@
 
 **Exit criteria:** The project can measure security-test effectiveness against a documented set of intentional defects.
 
+**Status:** catalog of 11 defects and 3 controls, suite-level kill attribution, aggregate score, CI gate, and documented limitations are implemented. Invalid/equivalent mutation classification and full environment metadata (commit SHA, toolchain) are not.
+
 ## Phase 4 — AI-assisted scenario generation (Weeks 12–15)
+
+**Status:** not started. No model integration exists in this repository.
 
 **Objective:** Determine whether an LLM adds useful security-test coverage.
 
@@ -92,7 +113,13 @@
 
 **Exit criteria:** AI-generated scenarios can be safely validated, executed, evaluated, and compared with deterministic tests.
 
+**Status:** not started.
+
 ## Phase 5 — Hardening and fair evaluation (Weeks 16–18)
+
+**Status:** partially anticipated. Missing/contradictory evidence, fail-closed enforcement, and stale
+policy versions already have tests; crash recovery, held-out evaluation, and cross-environment
+reproducibility do not.
 
 **Objective:** Make the results credible.
 
@@ -110,6 +137,8 @@
 - Publish the benchmark methodology.
 
 **Exit criteria:** Results can be reproduced and independently interpreted without relying on promotional claims.
+
+**Status:** not yet met. Results reproduce locally; independent interpretation needs the remaining work.
 
 ## Phase 6 — Portfolio and public release (Weeks 19–21)
 

@@ -75,7 +75,8 @@ Verdict: `FAIL`. A test that trusted the enforcer's response would have reported
 - Each run builds a fresh `ResourceStore` from the scenario's declared resources.
 - Tests inject a fixed clock, so reports are byte-identical across runs.
 - Reports include `scenarioId`, `scenarioVersion`, `policyVersion`, `verdict`, invariant results, and reasons.
-- Full environment metadata (commit SHA, toolchain version, model settings) is not yet recorded; that arrives with the benchmark runner in Phase 3.
+- Full environment metadata (commit SHA, toolchain version, model settings) is not yet recorded.
+- The mutation benchmark uses a fixed clock, so its report is byte-identical across runs.
 
 ## Threats to validity
 
@@ -89,3 +90,39 @@ Verdict: `FAIL`. A test that trusted the enforcer's response would have reported
 ## What this methodology does not claim
 
 It does not claim that any real AI agent is secure, that the baseline suite is complete, or that the measured results generalise. It demonstrates a verification method and its failure properties.
+
+## Mutation benchmark
+
+Coverage says which lines ran. It does not say whether a broken control would be caught. The
+benchmark in `packages/mutation-benchmark` answers the second question.
+
+A mutation is an intentionally defective executor (or a tampered run record). A mutation is **killed**
+when at least one scenario returns `FAIL` for it. `INCONCLUSIVE` is not a kill: the suite did not prove
+the control was broken.
+
+The catalog separates two kinds of entries:
+
+- **defects** — must be killed.
+- **controls** — correct executors written differently; must never be killed, or the suite is
+  producing false positives.
+
+Measured on the current catalog (`pnpm benchmark`):
+
+| Metric | Result |
+| --- | --- |
+| Defects in catalog | 11 |
+| Defects detected | 11 |
+| Mutation score | 100% |
+| Correct executors flagged | 0 of 3 |
+| Scenarios per mutant | 10 |
+
+This number is a regression signal for **this** catalog, not a general security guarantee. The catalog
+is small and authored by the same team that wrote the suite.
+
+### Known limitation pinned by a test
+
+If an adversary can rewrite the recorded post-state, the access log, and the mutation log
+consistently, the fabricated evidence is indistinguishable from a correct run. `benchmark.test.ts`
+asserts that this produces `PASS`, and documents it as a boundary rather than hiding it. Closing it
+requires persisted, tamper-evident evidence (signed run records and an append-only journal), which is
+not implemented.

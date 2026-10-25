@@ -1,5 +1,10 @@
 # AgentProof Architecture
 
+## Current implementation
+
+Layers 1, 3 (deterministic part), and 4 are implemented. Layer 2 is a controlled executor, not an
+autonomous agent. The AI planner in layer 3 is planned, not built. See [roadmap](roadmap.md).
+
 ## High-level Design
 
 The platform consists of four major layers:

@@ -40,7 +40,7 @@ Status: **initial**, covering the implemented deterministic core.
 | Sensitive data access | Reader reads confidential record | covered (`auth-read-denied`) |
 | Action chaining | Allowed read followed by denied write | covered (`action-chaining`) |
 | Evaluator failure | Missing evidence | covered (returns `INCONCLUSIVE`) |
-| Fail-open on error | Enforcement exception allows operation | **not implemented** |
+| Fail-open on error | Enforcement exception allows operation | covered (fail-closed tests) |
 | Memory poisoning | Persisted instruction changes later behaviour | out of scope (Phase 7) |
 | Concurrency / stale version | Racing policy activation | out of scope (Phase 7) |
 
@@ -73,7 +73,7 @@ Production secret management, network-level isolation, multi-tenant isolation, m
 
 ## Open gaps
 
-- Enforcement exceptions are not yet tested for fail-closed behaviour.
 - Only the first matching rule is applied; conflict precedence is undefined.
+- Evidence is recorded in memory only. An adversary who can rewrite state and logs consistently is out of scope until evidence is persisted and tamper-evident.
 - Key rotation and revocation are not implemented.
 - No persistence, so audit records do not survive process exit.
